@@ -1,29 +1,31 @@
 #!/bin/bash
-echo "Starting staging deployment..."
-
 set -e
+set -o pipefail
+
+echo "Starting deployment..."
 
 cd /var/www/laravel-staging
 
-echo "[1/6] Pulling latest changes from Git..."
-git pull origin develop
+echo "[1/7] Pulling latest changes..."
+git fetch origin develop
+git reset --hard origin/develop
 
-echo "[2/6] Installing dependencies..."
-composer install --no-dev --no-progress --prefer-dist
+echo "[2/7] Installing dependencies..."
+composer install --no-dev --no-progress --prefer-dist --no-interaction --optimize-autoloader
 
-echo "[3/6] Running migrations..."
+echo "[3/7] Running migrations..."
 php artisan migrate --force
 
-echo "[4/6] Caching configuration..."
-php artisan config:cache
+echo "[4/7] Clearing old caches..."
+php artisan optimize:clear
 
-echo "[5/6] Caching routes..."
-php artisan route:cache
+echo "[5/7] Rebuilding caches..."
+php artisan optimize
 
-echo "[6/6] Caching views..."
-php artisan view:cache
+echo "[6/7] Restarting queue workers..."
+php artisan queue:restart
 
-echo "Restarting PHP-FPM..."
-sudo systemctl restart php8.5-fpm
+echo "[7/7] Reloading PHP-FPM..."
+sudo systemctl reload php8.4-fpm
 
-echo "Staging deployment completed successfully!"
+echo "Deployment completed successfully!"
