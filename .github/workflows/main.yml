@@ -40,6 +40,9 @@ jobs:
       - name: "Install dependencies"
         run: composer install --no-progress --prefer-dist
 
+      - name: "Set DB port for CI"
+        run: sed -i 's/DB_PORT=5433/DB_PORT=5432/' .env.testing
+
       - name: "Create test database"
         run: psql -h 127.0.0.1 -U laravel -d laravel -c "CREATE DATABASE laravel_test;"
         env:
