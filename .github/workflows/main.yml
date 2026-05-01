@@ -32,16 +32,16 @@ jobs:
       - name: "Set up php"
         uses: shivammathur/setup-php@v2
         with:
-          php-version: "8.5"
+          php-version: "8.4"
 
       - name: "Create .env file"
         run: cp .env.example .env
 
       - name: "Install dependencies"
         run: composer install --no-progress --prefer-dist
-
-      - name: "Set DB port for CI"
-        run: sed -i 's/DB_PORT=5433/DB_PORT=5432/' .env.testing
+      
+      - name: "Generate app key"
+        run: php artisan key:generate --force
 
       - name: "Create test database"
         run: psql -h 127.0.0.1 -U laravel -d laravel -c "CREATE DATABASE laravel_test;"
@@ -50,9 +50,21 @@ jobs:
 
       - name: "Run migrations"
         run: php artisan migrate --force --env=testing
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: laravel_test
+          DB_USERNAME: laravel
+          DB_PASSWORD: secret
 
       - name: "Run tests"
-        run: ./vendor/bin/pest
+        run: ./vendor/bin/pest --parallel
+        env:
+          DB_HOST: 127.0.0.1
+          DB_PORT: 5432
+          DB_DATABASE: laravel_test
+          DB_USERNAME: laravel
+          DB_PASSWORD: secret
 
   deploy-staging:
     runs-on: ubuntu-latest
