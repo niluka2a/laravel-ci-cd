@@ -2,6 +2,7 @@
 
 namespace App\Providers;
 
+use Illuminate\Database\Eloquent\Model;
 use Illuminate\Support\ServiceProvider;
 
 class AppServiceProvider extends ServiceProvider
@@ -19,6 +20,8 @@ class AppServiceProvider extends ServiceProvider
      */
     public function boot(): void
     {
-        //
+        Model::handleLazyLoadingViolationUsing(function (Model $model, string $relation) {
+            logger()->warning("Lazy loading violation: Attempted to lazy load [{$relation}] on model [" . get_class($model) . "].");
+        });
     }
 }
