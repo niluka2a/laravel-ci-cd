@@ -97,7 +97,9 @@ return [
     */
 
     'waits' => [
+        'redis:high' => 30,
         'redis:default' => 60,
+        'redis:low' => 120,
     ],
 
     /*
@@ -199,7 +201,7 @@ return [
     'defaults' => [
         'supervisor-1' => [
             'connection' => 'redis',
-            'queue' => ['default'],
+            'queue' => ['high', 'default', 'low'],
             'balance' => 'auto',
             'autoScalingStrategy' => 'time',
             'maxProcesses' => 1,
